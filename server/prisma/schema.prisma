@@ -1,0 +1,145 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Restaurant {
+  id           String        @id @default(cuid())
+  name         String
+  slug         String        @unique
+  currency     String        @default("USD")
+  categories   Category[]
+  items        MenuItem[]
+  optionGroups OptionGroup[] // <-- added inverse relation
+  orders       Order[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Category {
+  id           String     @id @default(cuid())
+  name         String
+  position     Int        @default(0)
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  restaurantId String
+  items        MenuItem[]
+}
+
+model MenuItem {
+  id           String        @id @default(cuid())
+  name         String
+  description  String?
+  price        Int
+  imageUrl     String?
+  isAvailable  Boolean       @default(true)
+  restaurant   Restaurant    @relation(fields: [restaurantId], references: [id])
+  restaurantId String
+  category     Category?     @relation(fields: [categoryId], references: [id])
+  categoryId   String?
+  optionGroups OptionGroup[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model OptionGroup {
+  id           String     @id @default(cuid())
+  name         String
+  minSelect    Int        @default(0)
+  maxSelect    Int        @default(1)
+  required     Boolean    @default(false)
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  restaurantId String
+  item         MenuItem   @relation(fields: [itemId], references: [id])
+  itemId       String
+  options      Option[]
+}
+
+model Option {
+  id         String      @id @default(cuid())
+  name       String
+  priceDelta Int         @default(0)
+  group      OptionGroup @relation(fields: [groupId], references: [id])
+  groupId    String
+}
+
+enum OrderType {
+  PICKUP
+  DELIVERY
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY
+  OUT_FOR_DELIVERY
+  COMPLETED
+  CANCELED
+}
+
+enum PaymentStatus {
+  UNPAID
+  REQUIRES_ACTION
+  PAID
+  REFUNDED
+  FAILED
+}
+
+model Order {
+  id            String        @id @default(cuid())
+  number        Int           @unique @default(autoincrement())
+  restaurant    Restaurant    @relation(fields: [restaurantId], references: [id])
+  restaurantId  String
+  type          OrderType
+  status        OrderStatus   @default(PENDING)
+  customerName  String
+  phone         String?
+  email         String?
+  notes         String?
+  addressJson   Json?
+  subtotal      Int           @default(0)
+  tax           Int           @default(0)
+  total         Int           @default(0)
+  paymentStatus PaymentStatus @default(UNPAID)
+  items         OrderItem[]
+  payments      Payment[]
+  events        StatusEvent[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model OrderItem {
+  id          String @id @default(cuid())
+  order       Order  @relation(fields: [orderId], references: [id])
+  orderId     String
+  itemId      String
+  name        String
+  unitPrice   Int
+  quantity    Int
+  optionsJson Json?
+}
+
+model Payment {
+  id         String        @id @default(cuid())
+  order      Order         @relation(fields: [orderId], references: [id])
+  orderId    String
+  provider   String
+  providerId String
+  amount     Int
+  currency   String
+  status     PaymentStatus @default(UNPAID)
+  createdAt  DateTime      @default(now())
+}
+
+model StatusEvent {
+  id        String      @id @default(cuid())
+  order     Order       @relation(fields: [orderId], references: [id])
+  orderId   String
+  status    OrderStatus
+  note      String?
+  createdAt DateTime    @default(now())
+}

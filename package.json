@@ -1,0 +1,9 @@
+{
+  "name": "resto-pro",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": ["client", "server"],
+  "scripts": {
+    "dev": "npm run -w server dev"
+  }
+}

@@ -1,0 +1,8 @@
+﻿@import "tailwindcss";
+
+/* Tell Tailwind v4 where to scan for class names (relative to this file) */
+@source "../**/*.{js,ts,jsx,tsx,mdx}";
+
+/* Optional: force light theme for now */
+html { color-scheme: light; }
+body { background: #ffffff; color: #111827; }
