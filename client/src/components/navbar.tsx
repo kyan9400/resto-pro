@@ -14,11 +14,12 @@ export default function Navbar() {
           <Link href="/" className="text-lg font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-violet-700 to-sky-600">
             Demo Deli
           </Link>
+
           <div className="hidden sm:flex items-center gap-6 text-sm text-slate-600">
             <Link href="/" className="hover:text-slate-900 transition">Menu</Link>
-            <a href="#" className="hover:text-slate-900 transition">About</a>
-            <a href="#" className="hover:text-slate-900 transition">Contact</a>
+            <Link href="/admin" className="hover:text-slate-900 transition">Admin</Link>
           </div>
+
           <Link
             href="/cart"
             className="inline-flex items-center gap-2 rounded-full border border-slate-300 px-3 py-1 text-sm font-medium hover:bg-slate-900 hover:text-white transition"

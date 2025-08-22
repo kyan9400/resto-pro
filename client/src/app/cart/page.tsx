@@ -1,4 +1,5 @@
 ﻿"use client";
+import Link from "next/link";
 import { useCart } from "@/components/cart-provider";
 
 export default function CartPage() {
@@ -12,7 +13,7 @@ export default function CartPage() {
         <p className="text-sm text-gray-600">Cart is empty.</p>
       ) : (
         <>
-          <ul className="divide-y rounded-2xl border">
+          <ul className="divide-y rounded-2xl border bg-white/80 backdrop-blur">
             {items.map((it, idx) => (
               <li key={idx} className="p-4 flex items-start justify-between gap-4">
                 <div>
@@ -39,13 +40,12 @@ export default function CartPage() {
             <div className="text-lg font-semibold">Subtotal: ${(subtotal/100).toFixed(2)}</div>
           </div>
 
-          <button
-            className="w-full rounded-xl bg-black px-4 py-3 text-white font-medium"
-            disabled
-            title="Checkout coming next"
+          <Link
+            href="/checkout"
+            className="block w-full text-center rounded-xl bg-black px-4 py-3 text-white font-medium hover:opacity-95"
           >
-            Checkout (coming next)
-          </button>
+            Continue to Checkout
+          </Link>
         </>
       )}
     </main>

@@ -7,7 +7,7 @@ export type CartItem = {
   name: string;
   unitPrice: number; // cents
   quantity: number;
-  options: { name: string; priceDelta: number }[];
+  options: { id?: string; name: string; priceDelta: number }[]; // id added
 };
 
 type CartCtx = {

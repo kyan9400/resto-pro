@@ -61,7 +61,7 @@ export default function AddToCart({ item }: { item: any }) {
           onClick={() => {
             const options = Object.values(chosen)
               .flat()
-              .map((o: any) => ({ name: o.name, priceDelta: o.priceDelta || 0 }));
+              .map((o: any) => ({ id: o.id, name: o.name, priceDelta: o.priceDelta || 0 }));
             add({
               itemId: item.id,
               name: item.name,
