@@ -1,9 +1,33 @@
 ﻿import { Router } from "express";
 import { PrismaClient, OrderStatus } from "@prisma/client";
 import { z } from "zod";
+import { addClient, publish } from "../sse";
 
 const r = Router();
 const db = new PrismaClient();
+
+/**
+ * SSE stream of order updates for a restaurant
+ */
+r.get("/:slug/stream", (req, res) => {
+  const slug = req.params.slug;
+
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+
+  // CORS pre-set by app.use(cors(...)), but make extra permissive just in case
+  const origin = req.headers.origin ?? "*";
+  res.setHeader("Access-Control-Allow-Origin", origin);
+
+  res.flushHeaders?.(); // if compression disabled
+
+  addClient(slug, res);
+
+  // Heartbeat
+  const iv = setInterval(() => res.write(`: ping ${Date.now()}\n\n`), 15000);
+  req.on("close", () => clearInterval(iv));
+});
 
 /**
  * GET /api/admin/:slug/orders?limit=50
@@ -46,7 +70,10 @@ const StatusBody = z.object({
 r.post("/orders/:id/status", async (req, res) => {
   try {
     const { status, note } = StatusBody.parse(req.body);
-    const order = await db.order.findUnique({ where: { id: req.params.id } });
+    const order = await db.order.findUnique({
+      where: { id: req.params.id },
+      include: { restaurant: true }
+    });
     if (!order) return res.status(404).json({ error: "Order not found" });
 
     const updated = await db.$transaction(async (tx) => {
@@ -58,6 +85,13 @@ r.post("/orders/:id/status", async (req, res) => {
         data: { orderId: order.id, status, note: note ?? null }
       });
       return o;
+    });
+
+    // Broadcast status change
+    publish(order.restaurant.slug, "order.updated", {
+      id: updated.id,
+      number: updated.number,
+      status: updated.status
     });
 
     res.json({ id: updated.id, number: updated.number, status: updated.status });

@@ -1,6 +1,7 @@
 ﻿import { Router } from "express";
 import { PrismaClient, OrderStatus, PaymentStatus, OrderType } from "@prisma/client";
 import { z } from "zod";
+import { publish } from "../sse";
 
 const r = Router();
 const db = new PrismaClient();
@@ -89,6 +90,14 @@ r.post("/", async (req, res) => {
         events: { create: { status: OrderStatus.PENDING, note: "Order placed" } }
       },
       include: { items: true }
+    });
+
+    // Broadcast new order
+    publish(input.restaurantSlug, "order.created", {
+      id: order.id,
+      number: order.number,
+      status: order.status,
+      total: order.total
     });
 
     return res.status(201).json({
