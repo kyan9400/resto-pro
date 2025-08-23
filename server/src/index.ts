@@ -56,3 +56,4 @@ app.use("/api/admin", adminRouter);
 app.listen(PORT, () => {
   console.log(`API running on http://localhost:${PORT}`);
 });
+

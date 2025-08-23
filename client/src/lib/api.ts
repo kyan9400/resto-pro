@@ -1,12 +1,18 @@
 ﻿import ky from "ky";
+import { getAdminToken } from "@/lib/admin-token";
+
+const BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 export const api = ky.create({
-  prefixUrl: process.env.NEXT_PUBLIC_API_URL!,
+  prefixUrl: BASE,
   hooks: {
     beforeRequest: [
       (request) => {
-        request.headers.set("content-type", "application/json");
-      }
-    ]
-  }
+        try {
+          const t = getAdminToken();
+          if (t) request.headers.set("Authorization", `Bearer ${t}`);
+        } catch {}
+      },
+    ],
+  },
 });
