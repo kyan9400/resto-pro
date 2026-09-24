@@ -30,3 +30,14 @@ server/prisma/dev.db*
 # macOS / Windows
 .DS_Store
 Thumbs.db
+
+# keep example env files
+!.env.example
+
+# server build output
+server/dist/
+
+# coverage / ts incremental / generated next types
+coverage/
+*.tsbuildinfo
+client/next-env.d.ts
